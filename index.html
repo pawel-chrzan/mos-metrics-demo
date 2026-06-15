@@ -64,20 +64,29 @@
   .nudge .t b{font-weight:600}
   @media(max-width:760px){ .nudge{display:none} .hero{padding:2rem 1.4rem} .hero-h1 .big{font-size:2.2rem} }
 
-  /* scenario band — the interactive centerpiece */
+  /* scenario control (dropdown — options revealed on click) */
   .scn{margin-top:1.5rem}
-  .scn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
-  .scn-card{position:relative;text-align:left;cursor:pointer;border-radius:var(--radius);padding:1.15rem 1.25rem;
-    background:var(--surface);border:1.5px solid var(--hair);box-shadow:var(--shadow);transition:.22s ease-out;backdrop-filter:blur(8px)}
-  .scn-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift)}
-  .scn-card.active{border-color:var(--orange);background:linear-gradient(135deg,#fff7f0,#fdeede)}
-  .scn-card .nm{font-weight:600;font-size:1.05rem;color:var(--ink-900);display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-  .scn-card .ds{font-size:.85rem;color:var(--ink-300);margin-top:.3rem;line-height:1.4}
-  .scn-card .tag{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);
-    display:inline-flex;align-items:center;gap:.35rem;opacity:0;transition:.2s}
-  .scn-card.active .tag{opacity:1}
-  .scn-card .tag .d{width:.45rem;height:.45rem;border-radius:999px;background:var(--orange)}
-  @media(max-width:760px){ .scn-grid{grid-template-columns:1fr} }
+  .ctrlbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+  .ctrl-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .dd{position:relative}
+  .dd-trigger{display:inline-flex;align-items:center;gap:.7rem;cursor:pointer;font:inherit;
+    background:linear-gradient(135deg,#fff7f0,#fdeede);border:1.5px solid var(--orange);border-radius:999px;padding:.5rem 1rem;box-shadow:var(--shadow);transition:.18s}
+  .dd-trigger:hover{box-shadow:var(--shadow-lift)}
+  .dd-cap{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange)}
+  .dd-cur{font-weight:600;color:var(--ink-900)}
+  .dd-trigger .chev{color:var(--orange);font-size:.7rem;transition:transform .2s}
+  .dd.open .dd-trigger .chev{transform:rotate(180deg)}
+  .dd-menu{position:absolute;top:calc(100% + .55rem);left:0;z-index:30;min-width:20rem;
+    background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--hair);border-radius:16px;
+    box-shadow:var(--shadow-lift);padding:.4rem;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.16s ease-out}
+  .dd.open .dd-menu{opacity:1;visibility:visible;transform:translateY(0)}
+  .dd-opt{display:block;width:100%;text-align:left;cursor:pointer;font:inherit;background:transparent;border:0;border-radius:12px;padding:.7rem .8rem;transition:.14s}
+  .dd-opt:hover{background:var(--cream)}
+  .dd-opt.active{background:linear-gradient(135deg,#fff7f0,#fdeede)}
+  .dd-opt .o-nm{display:flex;align-items:center;justify-content:space-between;font-weight:600;color:var(--ink-900);font-size:.95rem}
+  .dd-opt .o-nm .pi{color:var(--orange);font-size:.85rem}
+  .dd-opt .o-ds{display:block;font-size:.82rem;color:var(--ink-300);margin-top:.2rem;line-height:1.35}
+  @media(max-width:760px){ .dd-menu{min-width:min(20rem,80vw)} }
 
   /* controls row */
   .seg{display:inline-flex;background:var(--cream);border:1px solid var(--hair);border-radius:999px;padding:.2rem}
@@ -236,18 +245,26 @@ function render(){
     <div class="nudge"><span class="dot" style="background:${nudge.dot}"></span><span class="t">${nudge.txt}</span></div>
   </header>
 
-  <!-- SCENARIO SWITCHER (interactive centerpiece) -->
+  <!-- SCENARIO CONTROL (dropdown — options shown on click) -->
   <section class="scn">
-    <div class="between" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:.5rem">
-      <div><div class="eyebrow">try it — this is a live demo</div>
-        <div class="sec-title" style="font-size:1.35rem">See it the way your rollout looks</div></div>
+    <div class="ctrlbar">
+      <div class="ctrl-left">
+        <span class="eyebrow">try it — live demo</span>
+        <div class="dd" id="scnDD">
+          <button class="dd-trigger" id="scnTrigger" aria-haspopup="true">
+            <span class="dd-cap">Scenario</span>
+            <span class="dd-cur">${SCENARIOS.find(s=>s.id===state.scn).label}</span>
+            <i class="pi pi-chevron-down chev"></i>
+          </button>
+          <div class="dd-menu">${SCENARIOS.map(s=>`
+            <button class="dd-opt ${state.scn===s.id?'active':''}" data-scn="${s.id}">
+              <span class="o-nm">${s.label}${state.scn===s.id?'<i class="pi pi-check"></i>':''}</span>
+              <span class="o-ds">${s.ds}</span>
+            </button>`).join('')}</div>
+        </div>
+      </div>
       <div class="seg">${[4,8,12].map(w=>`<button class="${state.weeks===w?'on':''}" data-wk="${w}">${w} weeks</button>`).join('')}</div>
     </div>
-    <div class="scn-grid">${SCENARIOS.map(s=>`
-      <button class="scn-card ${state.scn===s.id?'active':''}" data-scn="${s.id}">
-        <div class="nm">${s.label}<span class="tag"><span class="d"></span> Viewing</span></div>
-        <div class="ds">${s.ds}</div>
-      </button>`).join('')}</div>
   </section>
 
   <!-- HERO STATS -->
@@ -348,8 +365,12 @@ function render(){
   `;
 
   buildCharts(m);
-  app.querySelectorAll('[data-scn]').forEach(b=>b.onclick=()=>{state.scn=b.dataset.scn;render();window.scrollTo({top:0,behavior:'smooth'});});
+  const dd=document.getElementById('scnDD');
+  document.getElementById('scnTrigger').onclick=(e)=>{e.stopPropagation();dd.classList.toggle('open');};
+  app.querySelectorAll('[data-scn]').forEach(b=>b.onclick=()=>{state.scn=b.dataset.scn;render();});
   app.querySelectorAll('[data-wk]').forEach(b=>b.onclick=()=>{state.weeks=+b.dataset.wk;render();});
+  // Close the scenario menu on any outside click (bound once).
+  if(!window.__ddClose){window.addEventListener('click',()=>{const d=document.getElementById('scnDD');if(d)d.classList.remove('open');});window.__ddClose=true;}
 }
 
 function funnel(a){const rows=[['Invited',a.invited,100,'var(--ink-500)'],['Account created',a.accounts,Math.round(a.accounts/a.invited*100),'var(--orange-soft)'],['Onboarding complete',a.onboarded,Math.round(a.onboarded/a.invited*100),'var(--apricot)']];
